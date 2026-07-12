@@ -8,6 +8,7 @@ import com.example.ui.triggerPlatformNotification
 import com.example.ui.getCurrentFormattedDate
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 class MainViewModel : ViewModel() {
@@ -164,15 +165,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 if (FirebaseManager.isAvailable()) {
-                    val tracker = DeletedPrepopulatedTracker()
-                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                    val task = db.collection("deleted_prepopulated").get()
-                    val snapshot = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        com.google.android.gms.tasks.Tasks.await(task)
-                    }
-                    for (doc in snapshot.documents) {
-                        tracker.markAsDeleted(doc.id)
-                    }
+                    syncDeletedPrepopulatedFiles()
                 }
             } catch (e: Exception) {
                 println("[MainViewModel] WARN: Could not sync deleted prepopulated files list: ${e.message}")
@@ -235,6 +228,14 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Platform-specific Firebase sync for deleted prepopulated files.
+     * Only available on Android; iOS has a stub implementation.
+     */
+    private suspend fun syncDeletedPrepopulatedFiles() {
+        syncDeletedPrepopulatedFilesInternal()
+    }
+
     private suspend fun prepopulateDefaultBooks() {
         val prepopulated = listOf(
             // --- First Grade Books ---
@@ -244,7 +245,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب القرآن الكريم والتربية الإسلامية - الأول الابتدائي",
                 size = "12.4 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=15f893de-0cf3-40b2-9fbd-f0e6f715ab33"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%2[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_math_student",
@@ -252,7 +253,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الرياضيات (كتاب التلميذ) - الأول الابتدائي",
                 size = "18.2 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=cd0ee9fa-a52b-4476-a737-9aed72e14e3b"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%2[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_math_exercise",
@@ -260,7 +261,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الرياضيات (كتاب التمرينات) - الأول الابتدائي",
                 size = "8.7 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D2%AA%D9%85%D8%B1%D9%8A%D9%86%D8%A7%D8%AA_%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA_%D8%A7%D9%84%D8%A7%D9%88%D9%84_%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=37c144e3-ccbb-4b72-9926-40a1403fc339"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D2%AA%D9%85%D8%B1%D9%8A%D9%86%D8%A7%D8%AA_%D8%A7%D9%84%D8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_read",
@@ -268,7 +269,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب قراءتي - الأول الابتدائي",
                 size = "14.5 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%82%D8%B1%D8%A7%D8%A1%D8%AA%D9%8I%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=ca3217d5-699d-4b20-9a0e-4ad0dbe4bea4"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%82%D8%B1%D8%A7%D8%A1%D8%AA%D9%8I%20%D8%A7%D9%84%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_eng_pupil",
@@ -276,7 +277,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب اللغة الإنجليزية (Pupil's Book) - الأول الابتدائي",
                 size = "16.1 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8A%D8%B2%D9%8I_%D8%A7%D9%84%D8%B7%D8%A7%D9%84%D8%A8_%D5%A5%D9%84%D8%B5%D9%81_%D8%A7%D9%84%D8%A7%D9%88%D9%84_%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=4b33838b-354d-47bc-8405-9ce9607bf656"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8A%D8%B2%D9%8I_%D8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_eng_activity",
@@ -284,7 +285,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب اللغة الإنجليزية (Activity Book) - الأول الابتدائي",
                 size = "11.3 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8I_%D8%A7%D9%84%D9%86%D8%B4%D8%A7%D8%B7_%D5%A5%D9%84%D8%B5%D9%81_%D8%A7%D9%84%D8%A7%D9%88%D9%84_%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=80325e34-65f5-436e-9993-12f7e5586e6e"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8_%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8A_%D8%A7%D9%84%D9[...]
             ),
             SubjectFileEntity(
                 id = "book_ib1_ethics",
@@ -292,7 +293,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب التربية الأخلاقية - الأول الابتدائي",
                 size = "10.2 MB",
                 date = "28/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%AE%D9%84%D8%A7%D9%82%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=89a25c60-7d31-4e4b-a58e-0f9cc3ee7cf8"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%A[...]
             ),
 
             // --- Second Grade Books ---
@@ -302,7 +303,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب التربية الإسلامية - الثاني الابتدائي",
                 size = "14.2 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=804cfa8e-4a80-41f9-92ce-2df294a7c00d"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%2[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_moral",
@@ -310,7 +311,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب التربية الأخلاقية - الثاني الابتدائي",
                 size = "9.5 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%AE%D9%84%D8%A7%D9%82%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=89a25c60-7d31-4e4b-a58e-0f9cc3ee7cf8"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_math_student",
@@ -318,7 +319,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الرياضيات (كتاب التلميذ) - الثاني الابتدائي",
                 size = "19.5 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8F.pdf?alt=media&token=2fddfa2d-6234-4a06-aa1e-c71cb6b68220"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%2[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_math_exercise",
@@ -326,7 +327,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الرياضيات (كتاب التمرينات) - الثاني الابتدائي",
                 size = "9.1 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D2%AA%D9%85%D8%B1%D9%8A%D9%86%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=bc77f098-6889-468a-9bc9-d0378e888488"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D2%AA%D9%85%D8%B1%D9%8A%D9%86%D8%A7%D8%AA%20%D8%A7%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_read",
@@ -334,7 +335,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب قراءتي - الثاني الابتدائي",
                 size = "13.9 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%82%D8%B1%D8%A7%D8%A1%D8%AA%D9%8I%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=c7ce6946-ce75-470b-afbc-b4d84cf92168"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%82%D8%B1%D8%A7%D8%A1%D8%AA%D9%8I%20%D8%A7%D9%84%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_eng_pupil",
@@ -342,7 +343,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب اللغة الإنجليزية (Pupil's Book) - الثاني الابتدائي",
                 size = "15.8 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8I%20%D8%A7%D9%84%D8%B7%D8%A7%D9%84%D8%A8%20%D8%A7%D9%84%D8%B5%D9%81%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=5b2fc974-5609-481c-9c80-2f3ae6a49376"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8A_%D8%A7%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_eng_activity",
@@ -350,7 +351,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب اللغة الإنجليزية (Activity Book) - الثاني الابتدائي",
                 size = "11.1 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A6%D9%86%D9%83%D9%84%D9%8I%20%D8%A7%D9%84%D9%86%D8%B4%D8%A7%D8%B4%20%D8%A7%D9%84%D8%B5%D9%81%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=e88ed2b6-b0c3-4cc1-b4bb-90ef4888ab90"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A6%D9%86%D9%83%D9%84%D9%8A_%D8%A7%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_sci_student",
@@ -358,7 +359,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب العلوم - الثاني الابتدائي",
                 size = "16.4 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B9%D9%84%D9%88%D9%85%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=6d02dafe-b3d7-444d-9b0a-6aa68d37be17"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B9%D9%84%D9%88%D9%85%20%D8%A7%D9%84%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "book_ib2_sci_activity",
@@ -366,7 +367,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب نشاط العلوم - الثاني الابتدائي",
                 size = "10.8 MB",
                 date = "27/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%86%D8%B4%D8%A7%D8%B7%20%D8%A7%D9%84%D8%B9%D9%84%D9%88%D9%85%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media&token=1f090485-97b9-4844-9573-2d4e628a8aed"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D9%86%D8%B4%D8%A7%D8%B7%20%D8%A7%D9%84%D8%B9%D9%84%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "book_ib4_soc",
@@ -374,7 +375,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الاجتماعيات - الرابع الابتدائي",
                 size = "18.3 MB",
                 date = "28/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B1%D8%A7%D8%A8%D8%B9%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8A.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D[...]
             ),
             SubjectFileEntity(
                 id = "book_ib5_soc",
@@ -382,7 +383,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الاجتماعيات - الخامس الابتدائي",
                 size = "15.4 MB",
                 date = "28/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D[...]
             ),
             SubjectFileEntity(
                 id = "book_ib6_soc",
@@ -390,7 +391,7 @@ class MainViewModel : ViewModel() {
                 name = "كتاب الاجتماعيات - السادس الابتدائي",
                 size = "14.8 MB",
                 date = "28/06/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B3%D8%A7%D8%AF%D8%B3%20%D8%A7%D9%84%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D[...]
             ),
             SubjectFileEntity(
                 id = "notes_ids6_adab_zinab",
@@ -398,7 +399,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة الأدب والنصوص - السادس العلمي - الست زينب المياحي 2026",
                 size = "7.8 MB",
                 date = "05/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B3%D8%A7%D8%AF%D8%B3%20%D8%A7%D9%84%D8%A7%D2%AA%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida6_adab_zinab",
@@ -406,7 +407,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة الأدب والنصوص - السادس الأدبي - الست زينب المياحي 2026",
                 size = "7.8 MB",
                 date = "05/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B3%D8%A7%D8%AF%D8%B3%20%D8%A7%D9%84%D8%A7%D2%AA%D8%AA%D8%AF%D8%A7%D8%A6%D9%8I.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%D9%8A%D[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_ar_shammari_p1",
@@ -414,7 +415,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة العربية (القواعد والأدب) - الجزء الأول - الخامس الأدبي - د. مهند كريم الشمري",
                 size = "9.4 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AC%D8%B2%D8%A1%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%AF%20%D9%85%D9%87%D9%86%D8%AF%20%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_ar_shammari_p2",
@@ -422,7 +423,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة العربية (القواعد والأدب) - الجزء الثاني - الخامس الأدبي - د. مهند كريم الشمري",
                 size = "8.1 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AC%D8%B2%D8%A1%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D2%AA%D8%A3%D9%84%D9%8A%D9%81%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF%20%D8%AF%20%D9%85%D9%87%D9%86%D8%AF%20%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_isl_shams",
@@ -430,7 +431,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة التربية الإسلامية - الخامس الأدبي - إعداد سندس حادث عباس (مكتب الشمس)",
                 size = "11.2 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%B9%D8%AF%D8%A7%D8%AF%D9%8I%20%D9%85%D9%83%D8%AA%D8%A8%20%D8%A7%D9%84%D8%B4%D9%85%D8%B3.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "notes_ids5_ar_shammari_p1",
@@ -438,7 +439,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة العربية (القواعد والأدب) - الجزء الأول - الخامس العلمي - د. مهند كريم الشمري",
                 size = "9.4 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AC%D8%B2%D8%A1%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%B9%D9%84%D9%85%D9%8A%20%D8%AF%20%D9%85%D9%87%D9%86%D8%AF%20%D9%83%D8%B1%D9%8A%D9%85%20%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B[...]
             ),
             SubjectFileEntity(
                 id = "notes_ids5_ar_shammari_p2",
@@ -446,7 +447,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة العربية (القواعد والأدب) - الجزء الثاني - الخامس العلمي - د. مهند كريم الشمري",
                 size = "8.1 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AC%D8%B2%D8%A1%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8I%20%D8%A7%D9%84%D2%AA%D8%A3%D9%84%D9%8A%D9%81%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF%20%D8%AF%20%D9%85%D9%87%D9%86%D8%AF%20%D9%83%D8%B1%D9%8A%D9%85%20%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B[...]
             ),
             SubjectFileEntity(
                 id = "notes_ids5_isl_shams",
@@ -454,7 +455,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة التربية الإسلامية - الخامس العلمي - إعداد سندس حادث عباس (مكتب الشمس)",
                 size = "11.2 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%B9%D9%84%D9%85%D9%8A%20%D9%85%D9%83%D8%AA%D8%A8%20%D8%A7%D9%84%D8%B4%D9%85%D8%B3.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_eng_obeidi",
@@ -462,7 +463,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة الإنكليزية (مساعد الطالب) - الخامس الأدبي - إعداد عمر محمد العبيدي",
                 size = "5.8 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%A7%D9%86%D9%83%D9%84%D9%8A%D8%B2%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%B9%D9%85%D8%B1%20%D8%A7%D9%84%D8%B9%D8%A8%D9%8A%D8%AF%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%A[...]
             ),
             SubjectFileEntity(
                 id = "notes_ids5_eng_obeidi",
@@ -470,7 +471,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة اللغة الإنكليزية (مساعد الطالب) - الخامس العلمي - إعداد عمر محمد العبيدي",
                 size = "5.8 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AC%D8%B2%D8%A1%20%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D2%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%AF%20%D9%85%D9%87%D9%86%D8%AF%20%D8%A7%D9%84%D8%B4%D9%85%D8%B1%D9%82.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%84%D8%BA%D8%A9%20%D8%A7%D9%84%D8%B[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_math_rifai",
@@ -478,23 +479,23 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة الرياضيات (المنهل) - الخامس الأدبي - إعداد الأستاذ أياد شاكر الرفاعي",
                 size = "7.2 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%A7%D9%8A%D8%A7%D8%AF%20%D8%B4%D8%A7%D1%83%D8%B1%20%D8%A7%D9%84%D8%B1%D9%81%D8%A7%D8%B9%D9%8A.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_philo_janabi",
                 subjectId = "ida5_philo",
-                name = "ملزمة الفلسفة وعلم النفس - الجزء الأول (الفلسفة) - الخامس الأدبي - إعداد الأستاذ إبراهيم الجنابي",
+                name = "ملزمة الفلسفة وعلم النفس - الجزء الأول (الفلسفة) - الخامس الأدبي - إعداد الأستاذ إبراهيم الجناب[...]",
                 size = "6.5 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9%20%D9%88%D8%B9%D9%84%D9%85%20%D9%86%D9%81%D8%B3%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%82%20%D8%A7%D8%A8%D8%B1%D8%A7%D9%87%D9%8A%D9%85%20%D8%A7%D9%84%D8%AC%D9%86%D8%A7%D8%A8%D9%8A.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9%20%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_psych_janabi",
                 subjectId = "ida5_psych",
-                name = "ملزمة الفلسفة وعلم النفس - الجزء الثاني (علم النفس) - الخامس الأدبي - إعداد الأستاذ إبراهيم الجنابي",
+                name = "ملزمة الفلسفة وعلم النفس - الجزء الثاني (علم النفس) - الخامس الأدبي - إعداد الأستاذ إبراهيم الجن[...]",
                 size = "6.5 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9%20%D9%88%D8%B9%D9%84%D9%85%20%D9%86%D9%81%D8%B3%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%A7%D8%A8%D8%B1%D8%A7%D9%87%D9%8A%D9%85%20%D8%A7%D9%84%D8%AC%D9%86%D8%A7%D8%A8%D9%8A.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D9%81%D9%84%D8%B3%D9%81%D8%A9%20%D9%8[...]
             ),
             SubjectFileEntity(
                 id = "notes_ida5_geo_taifi",
@@ -502,7 +503,7 @@ class MainViewModel : ViewModel() {
                 name = "ملزمة الجغرافية - الخامس الأدبي - إعداد أساتذة الطائفي المتميزين",
                 size = "8.4 MB",
                 date = "08/07/2026",
-                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AC%D8%BA%D8%B1%D8%A7%D9%81%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AE%D8%A7%D9%85%D8%B3%20%D8%A7%D9%84%D8%A7%D8%AF%D8%A8%D9%8A%20%D8%A7%D9%84%D8%B7%D8%A7%D8%A6%D9%81%D9%8A.pdf?alt=media"
+                downloadUrl = "https://firebasestorage.googleapis.com/v0/b/malzamty-8d669.firebasestorage.app/o/%D9%85%D9%84%D8%B2%D9%85%D8%A9%20%D8%A7%D9%84%D8%AC%D8%BA%D8%B1%D8%A7%D9%81%D9%8A%D[...]
             )
         )
         
@@ -1025,7 +1026,7 @@ class MainViewModel : ViewModel() {
     }
 
     /**
-     * Deletes a class/grade
+     * Deletes a class from a stage
      */
     fun deleteClass(stageId: String, branchId: String?, classId: String) {
         val currentList = _educationStages.value.toMutableList()
@@ -1036,11 +1037,13 @@ class MainViewModel : ViewModel() {
 
         val updatedStage = if (stageId == "i3dadee" && branchId != null) {
             val branches = stage.branches.toMutableMap()
-            val classes = (branches[branchId] ?: emptyList()).filter { it.id != classId }
+            val classes = (branches[branchId] ?: emptyList()).toMutableList()
+            classes.removeAll { it.id == classId }
             branches[branchId] = classes
             stage.copy(branches = branches)
         } else {
-            val classes = stage.classes.filter { it.id != classId }
+            val classes = stage.classes.toMutableList()
+            classes.removeAll { it.id == classId }
             stage.copy(classes = classes)
         }
 
@@ -1048,188 +1051,7 @@ class MainViewModel : ViewModel() {
         saveStages(currentList)
         showToast("🗑️ تم حذف الصف بنجاح")
     }
-
-    private fun ensureScientificSubjectsUpdated(stagesList: List<Stage>): List<Stage> {
-        val fourthSubjects = listOf(
-            Subject("ids4_isl", "اسلامية", "🕌", "book"),
-            Subject("ids4_ar", "اللغة العربية", "📝", "book"),
-            Subject("ids4_eng", "اللغة الانكليزية", "🇬🇧", "book"),
-            Subject("ids4_math", "الرياضيات", "🔢", "book"),
-            Subject("ids4_chem", "الكيمياء", "🧪", "book"),
-            Subject("ids4_bio", "الاحياء", "🧬", "book"),
-            Subject("ids4_phy", "الفيزياء", "⚡", "book"),
-            Subject("ids4_comp", "الحاسوب", "💻", "notes"),
-            Subject("ids4_fr", "الفرنسي", "🇫🇷", "notes"),
-            Subject("ids4_ku", "الكردي", "☀️", "notes"),
-            Subject("ids4_baath", "كتائب جرائم حزب البعث", "📜", "notes")
-        )
-
-        val fifthSubjects = listOf(
-            Subject("ids5_isl", "الاسلامية", "🕌", "book"),
-            Subject("ids5_ar", "العربي", "📝", "book"),
-            Subject("ids5_eng", "الانكليزي", "🇬🇧", "book"),
-            Subject("ids5_math", "الرياضيات", "🔢", "book"),
-            Subject("ids5_bio", "الاحياء", "🧬", "book"),
-            Subject("ids5_chem", "الكيمياء", "🧪", "book"),
-            Subject("ids5_phy", "الفيزياء", "⚡", "book"),
-            Subject("ids5_earth", "علم الارض", "🌍", "book"),
-            Subject("ids5_comp", "الحاسوب", "💻", "notes"),
-            Subject("ids5_ku", "الكردي", "☀️", "notes"),
-            Subject("ids5_fr", "الفرنسي", "🇫🇷", "notes")
-        )
-
-        val sixthScientificSubjects = listOf(
-            Subject("ids6_isl", "الاسلامية", "🕌", "book"),
-            Subject("ids6_ar", "العربي", "📝", "book"),
-            Subject("ids6_eng", "الانكليزي", "🇬🇧", "book"),
-            Subject("ids6_math", "الرياضيات", "🔢", "book"),
-            Subject("ids6_bio", "الاحياء", "🧬", "book"),
-            Subject("ids6_chem", "الكيمياء", "🧪", "book"),
-            Subject("ids6_phy", "الفيزياء", "⚡", "book"),
-            Subject("ids6_fr", "الفرنسي", "🇫🇷", "notes")
-        )
-
-        val sixthAdabiSubjects = listOf(
-            Subject("ida6_isl", "الاسلامية", "🕌", "book"),
-            Subject("ida6_ar", "العربي", "📝", "book"),
-            Subject("ida6_eng", "الانكليزي", "🇬🇧", "book"),
-            Subject("ida6_math", "الرياضيات", "🔢", "book"),
-            Subject("ida6_hist", "التاريخ", "📜", "book"),
-            Subject("ida6_geo", "الجغرافية", "🌍", "book"),
-            Subject("ida6_econ", "الاقتصاد", "💹", "book")
-        )
-
-        val fifthAdabiSubjects = listOf(
-            Subject("ida5_ar", "اللغة العربية", "📝", "book"),
-            Subject("ida5_eng", "اللغة الإنجليزية", "🇬🇧", "book"),
-            Subject("ida5_math", "الرياضيات", "🔢", "book"),
-            Subject("ida5_hist", "التاريخ", "📜", "book"),
-            Subject("ida5_geo", "الجغرافية", "🌍", "book"),
-            Subject("ida5_philo", "الفلسفة والمنطق", "🧠", "book"),
-            Subject("ida5_psych", "علم النفس والاجتماع", "🤝", "notes"),
-            Subject("ida5_isl", "التربية الإسلامية", "🕌", "book"),
-            Subject("ida5_econ", "الاقتصاد", "💹", "notes")
-        )
-
-        return stagesList.map { stage ->
-            if (stage.id == "i3dadee") {
-                val updatedBranches = stage.branches.mapValues { (branchKey, classesList) ->
-                    when (branchKey) {
-                        "ilmi" -> {
-                            classesList.map { cls ->
-                                when (cls.id) {
-                                    "id4s" -> cls.copy(subjects = fourthSubjects)
-                                    "id5s" -> cls.copy(subjects = fifthSubjects)
-                                    "id6s" -> cls.copy(subjects = sixthScientificSubjects)
-                                    else -> cls
-                                }
-                            }
-                        }
-                        "adabi" -> {
-                            classesList.map { cls ->
-                                when (cls.id) {
-                                    "id5a" -> cls.copy(subjects = fifthAdabiSubjects)
-                                    "id6a" -> cls.copy(subjects = sixthAdabiSubjects)
-                                    else -> cls
-                                }
-                            }
-                        }
-                        else -> classesList
-                    }
-                }
-                stage.copy(branches = updatedBranches)
-            } else {
-                stage
-            }
-        }
-    }
-
-    // ─── NOTIFICATION METHODS ───
-    private fun loadNotifications() {
-        val jsonStr = KeyValueStorage.getString("notification_prefs_notifications_json", null)
-        if (jsonStr != null) {
-            try {
-                val list = Json.decodeFromString<List<AdminNotification>>(jsonStr)
-                _notifications.value = list
-            } catch (e: Exception) {
-                println("[MainViewModel] ERROR: Failed to parse notifications: ${e.message}")
-            }
-        } else {
-            // Seed default greeting notification so it's not empty
-            val defaultNotif = AdminNotification(
-                id = "welcome_notif",
-                title = "🎉 أهلاً بك في تطبيق ملازمي الجديد!",
-                content = "أهلاً بك في المنصة الشاملة لجميع الملازم والكتب المنهجية العراقية. يمكنك تصفح وتحميل الملازم مجاناً بالكامل وصافية من التشويش.",
-                type = "info",
-                date = getCurrentFormattedDate(),
-                targetUrl = null,
-                isRead = false
-            )
-            _notifications.value = listOf(defaultNotif)
-            saveNotificationsLocally(listOf(defaultNotif))
-        }
-    }
-
-    private fun saveNotificationsLocally(list: List<AdminNotification>) {
-        try {
-            val jsonStr = Json.encodeToString(list)
-            KeyValueStorage.putString("notification_prefs_notifications_json", jsonStr)
-        } catch (e: Exception) {
-            println("[MainViewModel] ERROR: Failed to save notifications: ${e.message}")
-        }
-    }
-
-    fun publishNotification(title: String, content: String, type: String, targetUrl: String?) {
-        val newNotif = AdminNotification(
-            id = "${System.currentTimeMillis()}_${(1000..9999).random()}",
-            title = title,
-            content = content,
-            type = type,
-            date = getCurrentFormattedDate(),
-            targetUrl = if (targetUrl.isNullOrBlank()) null else targetUrl,
-            isRead = false
-        )
-        val updatedList = listOf(newNotif) + _notifications.value
-        _notifications.value = updatedList
-        saveNotificationsLocally(updatedList)
-
-        // Trigger Local Android System Notification
-        triggerPlatformNotification(newNotif.title, newNotif.content)
-    }
-
-    fun markNotificationAsRead(id: String) {
-        val updated = _notifications.value.map {
-            if (it.id == id) it.copy(isRead = true) else it
-        }
-        _notifications.value = updated
-        saveNotificationsLocally(updated)
-    }
-
-    fun deleteNotification(id: String) {
-        val updated = _notifications.value.filterNot { it.id == id }
-        _notifications.value = updated
-        saveNotificationsLocally(updated)
-    }
-
-    fun markAllNotificationsAsRead() {
-        val updated = _notifications.value.map { it.copy(isRead = true) }
-        _notifications.value = updated
-        saveNotificationsLocally(updated)
-    }
-
-    
-
-    
-
-    fun downloadRemoteFile(file: SubjectFileEntity) {
-        repository.downloadRemoteFile(file)
-    }
-
-    fun shareLocalFile(file: SubjectFileEntity) {
-        repository.shareLocalFile(file)
-    }
-
-    fun openLocalFile(file: SubjectFileEntity) {
-        repository.openLocalFile(file)
-    }
 }
+
+// Platform-specific sync function
+expect suspend fun syncDeletedPrepopulatedFilesInternal()

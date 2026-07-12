@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Subtle White outer/halo glow for the icon elements -->
+    <!-- Open Book Pages (Bottom half) -->
+    <!-- Outer Navy/Green Pages Outline shadow -->
+    <path
+        android:fillColor="#11FFFFFF"
+        android:pathData="M20,65 C35,45 54,68 54,68 C54,68 73,45 88,65 L86,81 C73,61 54,84 54,84 C54,84 35,61 22,81 Z" />
+
+    <!-- Actual Book White Pages -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M22,63 C36,46 54,66 54,66 C54,66 72,46 86,63 L84,78 C72,61 54,81 54,81 C54,81 36,61 24,78 Z" />
+
+    <!-- Book Page Green highlight accent line representing Iraqi student colors -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#27AE60"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M26,71 C36,55 52,70 52,70 M56,70 C56,70 72,55 82,71" />
+
+    <!-- Academic Graduation Cap (Top half) -->
+    <!-- Cap base skull part -->
+    <path
+        android:fillColor="#F8F9FA"
+        android:pathData="M38,40 L38,51 C38,51 54,62 70,51 L70,40 Z" />
+
+    <!-- Top Diamond Mortarboard (Slightly tilted for dynamic look) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,18 L92,34 L54,50 L16,34 Z" />
+
+    <!-- Mortarboard inner shadow/highlight -->
+    <path
+        android:fillColor="#1A2E40"
+        android:pathData="M54,21 L86,34 L54,47 L22,34 Z" />
+
+    <!-- Gold Tassel Knob (Center) -->
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M54,34 A2,2 0 1,1 54,30 A2,2 0 1,1 54,34 Z" />
+
+    <!-- Gold Tassel Cord and Fringe -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#D4AF37"
+        android:strokeWidth="1.8"
+        android:pathData="M54,32 Q65,34 70,48" />
+
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M70,47 A2.2,2.2 0 1,1 70,42.6 A2.2,2.2 0 1,1 70,47 Z" />
+
+</vector>

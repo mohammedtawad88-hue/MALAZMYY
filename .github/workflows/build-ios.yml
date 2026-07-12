@@ -1,0 +1,78 @@
+name: Build iOS Target
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle cache
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Make Gradle script executable
+      run: chmod +x gradlew
+
+    - name: Build Kotlin iOS Framework
+      run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 :composeApp:linkDebugFrameworkIosArm64
+
+    - name: Build iOS Simulator App
+      run: |
+        xcodebuild -project iosApp/iosApp.xcodeproj \
+                   -scheme iosApp \
+                   -sdk iphonesimulator \
+                   -configuration Debug \
+                   -arch arm64 \
+                   CODE_SIGNING_ALLOWED=NO \
+                   CODE_SIGNING_REQUIRED=NO \
+                   clean build
+
+    - name: Build iOS Real Device App (Unsigned)
+      run: |
+        xcodebuild -project iosApp/iosApp.xcodeproj \
+                   -scheme iosApp \
+                   -sdk iphoneos \
+                   -configuration Debug \
+                   CODE_SIGNING_ALLOWED=NO \
+                   CODE_SIGNING_REQUIRED=NO \
+                   clean build
+
+    - name: Compress Simulator Build
+      run: |
+        cd build/ios/iphonesimulator
+        zip -r ../../../ios-simulator-app.zip *.app
+      continue-on-error: true
+
+    - name: Compress Real Device Build
+      run: |
+        cd build/ios/iphoneos
+        zip -r ../../../ios-real-device-app.zip *.app
+      continue-on-error: true
+
+    - name: Upload iOS Simulator Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-simulator-app
+        path: ios-simulator-app.zip
+        if-no-files-found: warn
+
+    - name: Upload iOS Real Device Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-real-device-app
+        path: ios-real-device-app.zip
+        if-no-files-found: warn

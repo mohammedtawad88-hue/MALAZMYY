@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Allow sharing files inside context.filesDir -->
+    <files-path name="local_files" path="." />
+    <!-- Allow sharing files inside context.cacheDir -->
+    <cache-path name="cached_files" path="." />
+</paths>

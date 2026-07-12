@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "541195681915",
+    "project_id": "malzamty-8d669",
+    "storage_bucket": "malzamty-8d669.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541195681915:android:ca38ccec1153ab0ddde2de",
+        "android_client_info": {
+          "package_name": "com.aistudio.mulazimi.pwcetg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjY83tT4KobAPVGqoZc5InGq11xSQxVL4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

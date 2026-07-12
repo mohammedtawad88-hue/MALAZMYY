@@ -1,0 +1,6 @@
+{
+  "name": "ملازمي",
+  "description": "منصة الطالب العراقي - جميع ملازم وكتب المراحل الدراسية في العراق",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
